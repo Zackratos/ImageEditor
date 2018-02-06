@@ -2,6 +2,13 @@ package com.miracle.view.imageeditor
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.R.attr.y
+import android.os.Build
+import android.content.Context.WINDOW_SERVICE
+import android.view.WindowManager
+import android.R.attr.x
+import android.content.Context
+import android.graphics.Point
 
 
 /**
@@ -35,16 +42,70 @@ object EditorCompressUtils {
         return mSampleSize
     }
 
-    fun getImageBitmap(filePath: String): Bitmap {
+    fun getImageBitmap(context: Context, filePath: String): Bitmap {
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
         BitmapFactory.decodeFile(filePath, options)
-        val outWidth = options.outWidth
-        val outHeight = options.outHeight
-        options.inSampleSize = computeSize(outWidth, outHeight)*2
+//        val outWidth = options.outWidth
+//        val outHeight = options.outHeight
+//        options.inSampleSize = computeSize(outWidth, outHeight)*2
+        options.inSampleSize = calculateInSampleSize(options, getScreenWidth(context), getScreenHeight(context))
         options.inJustDecodeBounds = false
         logD1("options.inSampleSize=${options.inSampleSize}")
         return BitmapFactory.decodeFile(filePath, options)
+    }
+
+
+    fun calculateInSampleSize(options: BitmapFactory.Options,
+                              reqWidth: Int, reqHeight: Int): Int {
+        // 源图片的高度和宽度
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+        if (height > reqHeight || width > reqWidth) {
+            // 计算出实际宽高和目标宽高的比率
+            val heightRatio = Math.round(height.toFloat() / reqHeight.toFloat())
+            val widthRatio = Math.round(width.toFloat() / reqWidth.toFloat())
+            // 选择宽和高中最小的比率作为inSampleSize的值，这样可以保证最终图片的宽和高
+            // 一定都会大于等于目标的宽和高。
+            inSampleSize = if (heightRatio < widthRatio) heightRatio else widthRatio
+        }
+        return inSampleSize
+    }
+
+
+    /**
+     * 获取屏幕的宽度（单位：px）
+     *
+     * @return 屏幕宽
+     */
+    private fun getScreenWidth(context: Context): Int {
+        val wm = context.getSystemService(Context.WINDOW_SERVICE) ?: return context.resources.displayMetrics.heightPixels
+        wm as WindowManager
+        val point = Point()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            wm.defaultDisplay.getRealSize(point)
+        } else {
+            wm.defaultDisplay.getSize(point)
+        }
+        return point.x
+    }
+
+    /**
+     * 获取屏幕的高度（单位：px）
+     *
+     * @return 屏幕高
+     */
+    private fun getScreenHeight(context: Context): Int {
+        val wm = context.getSystemService(Context.WINDOW_SERVICE) ?: return context.resources.displayMetrics.widthPixels
+        wm as WindowManager
+        val point = Point()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            wm.defaultDisplay.getRealSize(point)
+        } else {
+            wm.defaultDisplay.getSize(point)
+        }
+        return point.y
     }
 
 }

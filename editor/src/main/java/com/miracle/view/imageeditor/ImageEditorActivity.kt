@@ -4,10 +4,7 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Matrix
+import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.os.AsyncTask
 import android.os.Build
@@ -157,7 +154,8 @@ class ImageEditorActivity : AppCompatActivity(), LayerViewProvider {
             finish()
             return
         }
-        val imageBitmap = EditorCompressUtils.getImageBitmap(mEditorPath)
+        val imageBitmap = EditorCompressUtils.getImageBitmap(this, mEditorPath)
+//        val imageBitmap = BitmapFactory.decodeFile(mEditorPath)
         mCropHelper.restoreLayerData(cacheData!!)
         val cropBitmap = mCropHelper.restoreCropData(imageBitmap)
         layerImageView.setImageBitmap(cropBitmap)

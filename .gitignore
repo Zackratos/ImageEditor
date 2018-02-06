@@ -7,3 +7,4 @@ gradle/
 .gradle/
 /captures
 .externalNativeBuild
+*.apk
